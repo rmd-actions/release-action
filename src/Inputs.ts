@@ -15,6 +15,7 @@ export interface Inputs {
     readonly createdReleaseName?: string
     readonly discussionCategory?: string
     readonly generateReleaseNotes: boolean
+    readonly generateReleaseNotesPreviousTag?: string
     readonly immutableCreate: boolean
     readonly makeLatest?: "legacy" | "true" | "false" | undefined
     readonly omitBodyDuringUpdate: boolean
@@ -138,9 +139,14 @@ export class CoreInputs implements Inputs {
         return generate == "true"
     }
 
+    get generateReleaseNotesPreviousTag(): string | undefined {
+        const previousTag = core.getInput("generateReleaseNotesPreviousTag")
+        return previousTag || undefined
+    }
+
     get immutableCreate(): boolean {
         const immutable = core.getInput("immutableCreate")
-        return immutable != "false"
+        return immutable == "true"
     }
 
     get makeLatest(): "legacy" | "true" | "false" | undefined {
