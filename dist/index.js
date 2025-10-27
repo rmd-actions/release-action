@@ -118,20 +118,12 @@ class Action {
         return draftRelease?.id;
     }
     async updateRelease(id) {
-        let releaseBody = this.inputs.updatedReleaseBody;
-        if (this.inputs.generateReleaseNotes && !this.inputs.omitBodyDuringUpdate) {
-            const response = await this.releases.generateReleaseNotes(this.inputs.tag);
-            releaseBody = response.data.body;
-        }
+        const releaseBody = await this.combineBodyWithReleaseNotes(this.inputs.updatedReleaseBody, true);
         const releaseResponse = await this.releases.update(id, this.inputs.tag, releaseBody, this.inputs.commit, this.inputs.discussionCategory, this.inputs.updatedDraft, this.inputs.makeLatest, this.inputs.updatedReleaseName, this.inputs.updatedPrerelease);
         await this.processReleaseArtifactsAndOutputs(releaseResponse, false);
     }
     async createRelease() {
-        let releaseBody = this.inputs.createdReleaseBody;
-        if (this.inputs.generateReleaseNotes) {
-            const response = await this.releases.generateReleaseNotes(this.inputs.tag);
-            releaseBody = response.data.body;
-        }
+        const releaseBody = await this.combineBodyWithReleaseNotes(this.inputs.createdReleaseBody, false);
         // If immutableCreate is enabled we need to start with a draft release
         const draft = this.inputs.createdDraft || this.inputs.immutableCreate;
         const releaseResponse = await this.releases.create(this.inputs.tag, releaseBody, this.inputs.commit, this.inputs.discussionCategory, draft, this.inputs.makeLatest, this.inputs.createdReleaseName, this.inputs.createdPrerelease);
@@ -167,6 +159,21 @@ class Action {
         undefined, // commit is omitted
         this.inputs.discussionCategory, false, // We want to publish the release, set draft to false
         this.inputs.makeLatest, this.inputs.createdReleaseName, this.inputs.createdPrerelease);
+    }
+    async combineBodyWithReleaseNotes(body, isUpdate) {
+        // Determine if we should generate release notes based on operation type
+        const shouldGenerateReleaseNotes = isUpdate
+            ? this.inputs.generateReleaseNotes && !this.inputs.omitBodyDuringUpdate
+            : this.inputs.generateReleaseNotes;
+        if (!shouldGenerateReleaseNotes) {
+            return body;
+        }
+        const response = await this.releases.generateReleaseNotes(this.inputs.tag, this.inputs.generateReleaseNotesPreviousTag);
+        const releaseNotes = response.data.body;
+        if (!body || body.trim() === "") {
+            return releaseNotes;
+        }
+        return `${body}\n${releaseNotes}`;
     }
     setOutputs(releaseData, assetUrls) {
         this.outputs.applyReleaseData(releaseData);
@@ -860,6 +867,10 @@ class CoreInputs {
         const generate = core.getInput("generateReleaseNotes");
         return generate == "true";
     }
+    get generateReleaseNotesPreviousTag() {
+        const previousTag = core.getInput("generateReleaseNotesPreviousTag");
+        return previousTag || undefined;
+    }
     get immutableCreate() {
         const immutable = core.getInput("immutableCreate");
         return immutable == "true";
@@ -1100,12 +1111,16 @@ class GithubReleases {
             repo: this.inputs.repo,
         });
     }
-    async generateReleaseNotes(tag) {
-        return this.git.rest.repos.generateReleaseNotes({
+    async generateReleaseNotes(tag, previousTag) {
+        const params = {
             owner: this.inputs.owner,
             repo: this.inputs.repo,
             tag_name: tag,
-        });
+        };
+        if (previousTag) {
+            params.previous_tag_name = previousTag;
+        }
+        return this.git.rest.repos.generateReleaseNotes(params);
     }
     async getByTag(tag) {
         return this.git.rest.repos.getReleaseByTag({
