@@ -12,7 +12,7 @@
         "debug": "pnpm clean && pnpm install && pnpm build && pnpm package",
         "format": "pnpm biome format --write .",
         "package": "ncc build --source-map --license licenses.txt",
-        "release": "pnpm clean && pnpm install --prod && pnpm build && pnpm package",
+        "release": "pnpm clean && pnpm install && pnpm build && pnpm package",
         "test": "vitest run"
     },
     "repository": {
@@ -33,15 +33,22 @@
         "@actions/core": "^3.0.0",
         "@actions/github": "^9.0.0",
         "@types/node": "^25.1.0",
-        "glob": "^13.0.0"
+        "glob": "^13.0.6"
+    },
+    "pnpm": {
+        "overrides": {
+            "undici": ">=6.24.0",
+            "picomatch": ">=4.0.4"
+        }
     },
     "devDependencies": {
-        "@biomejs/biome": "2.3.13",
-        "@octokit/plugin-rest-endpoint-methods": "^10.4.1",
+        "@biomejs/biome": "2.4.4",
+        "@octokit/plugin-rest-endpoint-methods": "^17.0.0",
         "@octokit/request-error": "^7.1.0",
         "@octokit/types": "^16.0.0",
-        "@vitest/coverage-v8": "^4.0.18",
+        "@vercel/ncc": "^0.38.4",
+        "@vitest/coverage-v8": "^4.1.2",
         "typescript": "^5.9.3",
-        "vitest": "^4.0.18"
+        "vitest": "^4.1.2"
     }
 }
