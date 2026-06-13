@@ -32,7 +32,7 @@
     "dependencies": {
         "@actions/core": "^3.0.0",
         "@actions/github": "^9.0.0",
-        "@types/node": "^25.1.0",
+        "@types/node": "^25.6.0",
         "glob": "^13.0.6"
     },
     "pnpm": {
@@ -43,13 +43,13 @@
         }
     },
     "devDependencies": {
-        "@biomejs/biome": "2.4.4",
+        "@biomejs/biome": "2.4.13",
         "@octokit/plugin-rest-endpoint-methods": "^17.0.0",
         "@octokit/request-error": "^7.1.0",
         "@octokit/types": "^16.0.0",
         "@vercel/ncc": "^0.38.4",
         "@vitest/coverage-v8": "^4.1.2",
-        "typescript": "^5.9.3",
+        "typescript": "^6.0.3",
         "vitest": "^4.1.2"
     }
 }
